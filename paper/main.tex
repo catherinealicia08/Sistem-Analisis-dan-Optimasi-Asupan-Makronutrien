@@ -468,7 +468,7 @@ protein, karbohidrat, dan lemak sedekat mungkin
 dengan target nutrisi pengguna secara simultan.
 
 \subsection{Perencanaan Menu Mingguan}
-Modul perencana memecah hari menjadi empat \textit{slot} dengan distribusi default sarapan 25\%, makan siang 35\%, makan malam 30\%, dan camilan 10\%~\cite{usda_dgaa}. Untuk setiap \textit{slot} $m$, target slot dihitung $T_X^{(m)} = T_X\times\sigma_m$ dengan $\sigma_m$ pangsa \textit{slot}. ILP dijalankan terpisah per \textit{slot} dengan asupan saat ini nol dan dengan \textit{pool} makanan yang difilter berdasarkan kelayakan kategori untuk \textit{slot} tersebut (mis. sarapan menerima karbohidrat, buah, susu \& olahan, protein hewani/nabati). Hasil tujuh hari dipersist ke koleksi \texttt{meal\_plans}; permintaan ulang membaca data tersimpan. Pengguna dapat mengubah $\sigma$ selama $\sum_m\sigma_m=1$.
+Modul perencana memecah hari menjadi empat \textit{slot} dengan distribusi \textit{default} sarapan 25\%, makan siang 35\%, makan malam 30\%, dan camilan 10\%~\cite{usda_dgaa}. Untuk setiap \textit{slot} $m$, target slot dihitung $T_X^{(m)} = T_X\times\sigma_m$ dengan $\sigma_m$ pangsa \textit{slot}. ILP dijalankan terpisah per \textit{slot} dengan asupan saat ini nol dan dengan \textit{pool} makanan yang difilter berdasarkan kelayakan kategori untuk \textit{slot} tersebut (mis. sarapan menerima karbohidrat, buah, susu \& olahan, protein hewani/nabati). Hasil tujuh hari dipersist ke koleksi \texttt{meal\_plans}; permintaan ulang membaca data tersimpan. Pengguna dapat mengubah $\sigma$ selama $\sum_m\sigma_m=1$.
 
 \subsection{Agregasi Daftar Belanja}
 Daftar belanja dihasilkan dengan menjumlahkan gram tiap makanan dari seluruh \textit{slot} pada jendela tujuh hari, mengonversi makanan kategori buah/telur menjadi satuan butir berdasarkan tabel ukuran rumah tangga FAO yang dijadikan parameter di \texttt{PIECE\_FOODS}. Algoritmanya:
@@ -663,11 +663,14 @@ komprehensif. Personalisasi juga dapat ditingkatkan melalui penerapan
 \section*{Lampiran}
 
 \begin{itemize}
+    \item Akses Aplikasi MacroPlus:
+    \url{https://macroplus-frontend.vercel.app/}
+    
     \item Repositori GitHub:
     \url{https://github.com/catherinealicia08/Sistem-Analisis-dan-Optimasi-Asupan-Makronutrien.git}
     
     \item Video Demonstrasi:
-    \url{https://www.youtube.com/}
+    \url{https://youtu.be/jHQ7L2ld2Jo}
 \end{itemize}
 
 \end{document}
