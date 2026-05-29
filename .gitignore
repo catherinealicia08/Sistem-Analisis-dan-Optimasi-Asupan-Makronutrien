@@ -1,0 +1,5 @@
+backend/serviceAccountKey.json
+venv/
+node_modules/
+__pycache__/
+dist/
