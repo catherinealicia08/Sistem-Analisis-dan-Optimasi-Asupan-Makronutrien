@@ -136,11 +136,11 @@ export function FoodLoggerPage({ userId, date, log, onChange }: Props) {
     });
   }
 
-  async function quickAdd(food: Food) {
+  async function quickAdd(food: Food, grams: number) {
     setAdding(food.id);
     setError(null);
     try {
-      await api.addLogItem(userId, date, food.id, food.serving_size);
+      await api.addLogItem(userId, date, food.id, grams);
       onChange();
     } catch (e: any) {
       setError(e.message);
@@ -233,7 +233,7 @@ export function FoodLoggerPage({ userId, date, log, onChange }: Props) {
               food={f}
               isFavorite={favs.has(f.id)}
               onToggleFavorite={() => toggleFav(f.id)}
-              onAdd={() => quickAdd(f)}
+              onAdd={(grams) => quickAdd(f, grams)}
               adding={adding === f.id}
             />
           ))}
@@ -260,9 +260,26 @@ function FoodCard({
   food: Food;
   isFavorite: boolean;
   onToggleFavorite: () => void;
-  onAdd: () => void;
+  onAdd: (grams: number) => void;
   adding: boolean;
 }) {
+  const [isEditing, setIsEditing] = useState(false);
+  const [grams, setGrams] = useState(String(Math.round(food.serving_size || 100)));
+  const parsedGrams = Number(grams);
+  const validGrams = Number.isFinite(parsedGrams) && parsedGrams > 0 ? parsedGrams : 0;
+  const previewKcal = (food.calories * validGrams) / 100;
+
+  function startEdit() {
+    setGrams(String(Math.round(food.serving_size || 100)));
+    setIsEditing(true);
+  }
+
+  function submit() {
+    if (!validGrams || adding) return;
+    onAdd(validGrams);
+    setIsEditing(false);
+  }
+
   return (
     <article className="overflow-hidden rounded-xl2 border border-ink-200 bg-surface shadow-card transition hover:shadow-lift">
       <div className="relative aspect-[4/3] bg-ink-100">
@@ -289,14 +306,51 @@ function FoodCard({
         <p className="mt-1 text-xs text-ink-500 num">
           {Math.round(food.calories)} kcal &middot; {food.protein.toFixed(1)}g protein
         </p>
-        <button
-          onClick={onAdd}
-          disabled={adding}
-          className="mt-3 inline-flex w-full items-center justify-center gap-1.5 rounded-lg border border-brand-500 px-3 py-1.5 text-xs font-semibold text-brand-700 transition hover:bg-brand-50 disabled:cursor-not-allowed disabled:opacity-60"
-        >
-          <Plus size={14} weight="bold" />
-          {adding ? "Adding..." : "Add"}
-        </button>
+        {isEditing ? (
+          <div className="mt-3 space-y-2 rounded-lg border border-ink-200 bg-ink-50/70 p-2.5">
+            <div className="flex items-center gap-2">
+              <input
+                type="number"
+                min={1}
+                step={1}
+                value={grams}
+                onChange={(e) => setGrams(e.target.value)}
+                className="input h-9 flex-1"
+                placeholder="Grams"
+              />
+              <span className="text-xs font-semibold text-ink-500">gram</span>
+            </div>
+            <p className="text-xs text-ink-500 num">
+              Preview: {Math.round(previewKcal || 0)} kcal
+            </p>
+            <div className="flex gap-2">
+              <button
+                onClick={() => setIsEditing(false)}
+                disabled={adding}
+                className="inline-flex flex-1 items-center justify-center rounded-lg border border-ink-200 px-3 py-2 text-xs font-semibold text-ink-700 transition hover:bg-surface disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={submit}
+                disabled={adding || !validGrams}
+                className="inline-flex flex-1 items-center justify-center gap-1.5 rounded-lg border border-brand-500 px-3 py-2 text-xs font-semibold text-brand-700 transition hover:bg-brand-50 disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                <Plus size={14} weight="bold" />
+                {adding ? "Adding..." : "Add Food"}
+              </button>
+            </div>
+          </div>
+        ) : (
+          <button
+            onClick={startEdit}
+            disabled={adding}
+            className="mt-3 inline-flex w-full items-center justify-center gap-1.5 rounded-lg border border-brand-500 px-3 py-1.5 text-xs font-semibold text-brand-700 transition hover:bg-brand-50 disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            <Plus size={14} weight="bold" />
+            {adding ? "Adding..." : "Add"}
+          </button>
+        )}
       </div>
     </article>
   );
