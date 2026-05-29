@@ -50,6 +50,7 @@ def _build_log_out(user_id: str, day: date_cls) -> schemas.DailyLogOut:
         item_data = item_doc.to_dict()
         food_id = item_data.get("food_id")
         grams = item_data.get("grams", 0.0)
+        meal = item_data.get("meal")  # may be None on legacy entries
 
         # Fetch food detail
         try:
@@ -63,6 +64,7 @@ def _build_log_out(user_id: str, day: date_cls) -> schemas.DailyLogOut:
             food_id=food_id,
             grams=grams,
             food=food,
+            meal=meal,
         ))
 
     return schemas.DailyLogOut(
@@ -100,16 +102,20 @@ def add_item(
         log_ref.set({"user_id": user_id, "date": str(day)})
 
     # Tambah item ke subcollection
-    _, item_ref = _items_col(user_id, day).add({
+    item_payload = {
         "food_id": payload.food_id,
         "grams": payload.grams,
-    })
+    }
+    if payload.meal:
+        item_payload["meal"] = payload.meal
+    _, item_ref = _items_col(user_id, day).add(item_payload)
 
     return schemas.LogItemOut(
         id=item_ref.id,
         food_id=payload.food_id,
         grams=payload.grams,
         food=food,
+        meal=payload.meal,
     )
 
 

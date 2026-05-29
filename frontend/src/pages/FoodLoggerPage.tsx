@@ -1,17 +1,27 @@
 import { useEffect, useMemo, useState } from "react";
 import {
   CalendarBlank,
+  Check,
   Heart,
   MagnifyingGlass,
   Plus,
   Trash,
 } from "@phosphor-icons/react";
-import type { DailyLog, Food } from "../types";
+import type { DailyLog, Food, MealKey } from "../types";
 import { api } from "../api/client";
 import { Skeleton } from "../components/ui/Skeleton";
 import { foodImageSrc, onFoodImgError } from "../lib/foodImage";
-import { MEAL_LABEL, groupByMeal, itemMacros, type MealKey } from "../lib/meals";
+import { MEAL_LABEL, MEAL_ORDER, groupByMeal, itemMacros } from "../lib/meals";
 import { prettyDate } from "../lib/format";
+
+// Time-of-day default for the meal picker.
+function inferMeal(): MealKey {
+  const h = new Date().getHours();
+  if (h < 10) return "breakfast";
+  if (h < 15) return "lunch";
+  if (h < 21) return "dinner";
+  return "snack";
+}
 
 interface Props {
   userId: string;
@@ -136,14 +146,22 @@ export function FoodLoggerPage({ userId, date, log, onChange }: Props) {
     });
   }
 
-  async function quickAdd(food: Food, grams: number) {
-    setAdding(food.id);
+  const [justAdded, setJustAdded] = useState<string | null>(null);
+
+  async function quickAdd(food: Food, grams: number, meal: MealKey) {
+    // Optimistic UX: the editor closes immediately and a "Added" pulse shows
+    // for ~1.4s while the POST + dashboard refresh complete in the background.
     setError(null);
+    setAdding(food.id);
+    setJustAdded(food.id);
+    setTimeout(() => setJustAdded((id) => (id === food.id ? null : id)), 1400);
     try {
-      await api.addLogItem(userId, date, food.id, grams);
+      await api.addLogItem(userId, date, food.id, grams, meal);
+      // Fire-and-forget refresh — does not block the next user interaction.
       onChange();
     } catch (e: any) {
       setError(e.message);
+      setJustAdded((id) => (id === food.id ? null : id));
     } finally {
       setAdding(null);
     }
@@ -233,8 +251,9 @@ export function FoodLoggerPage({ userId, date, log, onChange }: Props) {
               food={f}
               isFavorite={favs.has(f.id)}
               onToggleFavorite={() => toggleFav(f.id)}
-              onAdd={(grams) => quickAdd(f, grams)}
+              onAdd={(grams, meal) => quickAdd(f, grams, meal)}
               adding={adding === f.id}
+              justAdded={justAdded === f.id}
             />
           ))}
         </div>
@@ -256,32 +275,41 @@ function FoodCard({
   onToggleFavorite,
   onAdd,
   adding,
+  justAdded,
 }: {
   food: Food;
   isFavorite: boolean;
   onToggleFavorite: () => void;
-  onAdd: (grams: number) => void;
+  onAdd: (grams: number, meal: MealKey) => void;
   adding: boolean;
+  justAdded: boolean;
 }) {
   const [isEditing, setIsEditing] = useState(false);
   const [grams, setGrams] = useState(String(Math.round(food.serving_size || 100)));
+  const [meal, setMeal] = useState<MealKey>(() => inferMeal());
   const parsedGrams = Number(grams);
   const validGrams = Number.isFinite(parsedGrams) && parsedGrams > 0 ? parsedGrams : 0;
   const previewKcal = (food.calories * validGrams) / 100;
 
   function startEdit() {
     setGrams(String(Math.round(food.serving_size || 100)));
+    setMeal(inferMeal());
     setIsEditing(true);
   }
 
   function submit() {
     if (!validGrams || adding) return;
-    onAdd(validGrams);
+    onAdd(validGrams, meal);
+    // Close immediately so the user can keep browsing while the POST runs.
     setIsEditing(false);
   }
 
   return (
-    <article className="overflow-hidden rounded-xl2 border border-ink-200 bg-surface shadow-card transition hover:shadow-lift">
+    <article
+      className={`relative overflow-hidden rounded-xl2 border bg-surface shadow-card transition hover:shadow-lift ${
+        justAdded ? "border-brand-500 ring-2 ring-brand-200" : "border-ink-200"
+      }`}
+    >
       <div className="relative aspect-[4/3] bg-ink-100">
         <img
           src={foodImageSrc(food)}
@@ -300,6 +328,12 @@ function FoodCard({
         >
           <Heart size={16} weight={isFavorite ? "fill" : "regular"} />
         </button>
+        {justAdded && (
+          <div className="absolute left-2.5 top-2.5 inline-flex items-center gap-1 rounded-full bg-brand-500 px-2.5 py-1 text-[11px] font-semibold text-white shadow-card">
+            <Check size={12} weight="bold" />
+            Added
+          </div>
+        )}
       </div>
       <div className="p-4">
         <h3 className="truncate text-sm font-semibold text-ink-900">{food.name}</h3>
@@ -308,6 +342,27 @@ function FoodCard({
         </p>
         {isEditing ? (
           <div className="mt-3 space-y-2 rounded-lg border border-ink-200 bg-ink-50/70 p-2.5">
+            <div>
+              <div className="text-[10px] font-semibold uppercase tracking-wide text-ink-500">
+                Add to
+              </div>
+              <div className="mt-1 grid grid-cols-4 gap-1">
+                {MEAL_ORDER.map((m) => (
+                  <button
+                    key={m}
+                    type="button"
+                    onClick={() => setMeal(m)}
+                    className={`rounded-md px-1.5 py-1 text-[11px] font-semibold transition ${
+                      meal === m
+                        ? "bg-brand-500 text-white"
+                        : "border border-ink-200 bg-surface text-ink-700 hover:bg-ink-50"
+                    }`}
+                  >
+                    {MEAL_LABEL[m]}
+                  </button>
+                ))}
+              </div>
+            </div>
             <div className="flex items-center gap-2">
               <input
                 type="number"
@@ -321,23 +376,22 @@ function FoodCard({
               <span className="text-xs font-semibold text-ink-500">gram</span>
             </div>
             <p className="text-xs text-ink-500 num">
-              Preview: {Math.round(previewKcal || 0)} kcal
+              Preview: {Math.round(previewKcal || 0)} kcal · {MEAL_LABEL[meal]}
             </p>
             <div className="flex gap-2">
               <button
                 onClick={() => setIsEditing(false)}
-                disabled={adding}
-                className="inline-flex flex-1 items-center justify-center rounded-lg border border-ink-200 px-3 py-2 text-xs font-semibold text-ink-700 transition hover:bg-surface disabled:cursor-not-allowed disabled:opacity-60"
+                className="inline-flex flex-1 items-center justify-center rounded-lg border border-ink-200 px-3 py-2 text-xs font-semibold text-ink-700 transition hover:bg-surface"
               >
                 Cancel
               </button>
               <button
                 onClick={submit}
-                disabled={adding || !validGrams}
-                className="inline-flex flex-1 items-center justify-center gap-1.5 rounded-lg border border-brand-500 px-3 py-2 text-xs font-semibold text-brand-700 transition hover:bg-brand-50 disabled:cursor-not-allowed disabled:opacity-60"
+                disabled={!validGrams}
+                className="inline-flex flex-1 items-center justify-center gap-1.5 rounded-lg border border-brand-500 bg-brand-500 px-3 py-2 text-xs font-semibold text-white transition hover:bg-brand-600 disabled:cursor-not-allowed disabled:opacity-60"
               >
                 <Plus size={14} weight="bold" />
-                {adding ? "Adding..." : "Add Food"}
+                Add Food
               </button>
             </div>
           </div>
@@ -347,8 +401,17 @@ function FoodCard({
             disabled={adding}
             className="mt-3 inline-flex w-full items-center justify-center gap-1.5 rounded-lg border border-brand-500 px-3 py-1.5 text-xs font-semibold text-brand-700 transition hover:bg-brand-50 disabled:cursor-not-allowed disabled:opacity-60"
           >
-            <Plus size={14} weight="bold" />
-            {adding ? "Adding..." : "Add"}
+            {justAdded ? (
+              <>
+                <Check size={14} weight="bold" />
+                Added
+              </>
+            ) : (
+              <>
+                <Plus size={14} weight="bold" />
+                {adding ? "Adding…" : "Add"}
+              </>
+            )}
           </button>
         )}
       </div>

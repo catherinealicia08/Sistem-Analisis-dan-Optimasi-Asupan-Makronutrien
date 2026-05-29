@@ -5,6 +5,7 @@ import type {
   Food,
   LogItem,
   MacroIntake,
+  MealKey,
   MetabolicTargets,
   OptimizationResult,
   User,
@@ -34,8 +35,18 @@ export const api = {
   getLog: async (userId: string, day: string): Promise<DailyLog> =>
     (await http.get<DailyLog>(`/users/${userId}/logs/${day}`)).data,
 
-  addLogItem: async (userId: string, day: string, food_id: string, grams: number): Promise<LogItem> =>
-    (await http.post<LogItem>(`/users/${userId}/logs/${day}/items`, { food_id, grams })).data,
+  addLogItem: async (
+    userId: string,
+    day: string,
+    food_id: string,
+    grams: number,
+    meal?: MealKey,
+  ): Promise<LogItem> =>
+    (await http.post<LogItem>(`/users/${userId}/logs/${day}/items`, {
+      food_id,
+      grams,
+      ...(meal ? { meal } : {}),
+    })).data,
 
   deleteLogItem: async (userId: string, day: string, itemId: string): Promise<void> => {
     await http.delete(`/users/${userId}/logs/${day}/items/${itemId}`);

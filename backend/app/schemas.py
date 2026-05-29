@@ -138,6 +138,9 @@ class MetabolicTargets(BaseModel):
 class LogItemCreate(BaseModel):
     food_id: str  # Firestore document ID (string)
     grams: float = Field(..., gt=0)
+    # Optional meal slot. When omitted, the client (or legacy entries) will
+    # fall back to a deterministic hash assignment — see frontend lib/meals.ts.
+    meal: Optional[Literal["breakfast", "lunch", "dinner", "snack"]] = None
 
 
 class LogItemOut(BaseModel):
@@ -145,6 +148,7 @@ class LogItemOut(BaseModel):
     food_id: str
     grams: float
     food: FoodOut
+    meal: Optional[Literal["breakfast", "lunch", "dinner", "snack"]] = None
 
 
 class DailyLogOut(BaseModel):

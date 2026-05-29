@@ -58,11 +58,14 @@ export interface Food {
   sodium?: number | null;
 }
 
+export type MealKey = "breakfast" | "lunch" | "dinner" | "snack";
+
 export interface LogItem {
   id: string;
   food_id: string;
   grams: number;
   food: Food;
+  meal?: MealKey | null;
 }
 
 export interface DailyLog {
@@ -127,7 +130,7 @@ export interface OptimizationResult {
 }
 
 /* ---------- Meal Planner ---------- */
-export type MealKey = "breakfast" | "lunch" | "dinner" | "snack";
+// MealKey re-uses the same declaration as logs above.
 
 export interface MealSlot {
   meal: MealKey;

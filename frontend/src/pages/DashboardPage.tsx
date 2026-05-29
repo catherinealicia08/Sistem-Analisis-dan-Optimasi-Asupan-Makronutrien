@@ -1,5 +1,7 @@
 import { useMemo } from "react";
+import { useNavigate } from "react-router-dom";
 import {
+  ArrowRight,
   Bell,
   Drop,
   Fire,
@@ -23,6 +25,7 @@ interface Props {
 }
 
 export function DashboardPage({ user, analysis, weekly, date }: Props) {
+  const navigate = useNavigate();
   const firstName = useMemo(
     () => user?.first_name?.trim() || (user?.name ?? "Athlete").split(" ")[0],
     [user],
@@ -188,7 +191,14 @@ export function DashboardPage({ user, analysis, weekly, date }: Props) {
                 {primaryInsight.message}
               </p>
               <div className="mt-auto pt-4">
-                <button className="btn-ghost w-full">View Full Analysis</button>
+                <button
+                  type="button"
+                  onClick={() => navigate("/analytics")}
+                  className="btn-ghost w-full"
+                >
+                  View Full Analysis
+                  <ArrowRight size={14} weight="bold" />
+                </button>
               </div>
             </>
           ) : analysis ? (
@@ -198,7 +208,14 @@ export function DashboardPage({ user, analysis, weekly, date }: Props) {
                 your macros sit within target today. Keep this rhythm to stay on plan.
               </p>
               <div className="mt-auto pt-4">
-                <button className="btn-ghost w-full">View Full Analysis</button>
+                <button
+                  type="button"
+                  onClick={() => navigate("/analytics")}
+                  className="btn-ghost w-full"
+                >
+                  View Full Analysis
+                  <ArrowRight size={14} weight="bold" />
+                </button>
               </div>
             </>
           ) : (

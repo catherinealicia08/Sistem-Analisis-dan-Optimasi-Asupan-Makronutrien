@@ -1,6 +1,6 @@
-import type { LogItem } from "../types";
+import type { LogItem, MealKey } from "../types";
 
-export type MealKey = "breakfast" | "lunch" | "dinner" | "snack";
+export type { MealKey };
 
 export const MEAL_LABEL: Record<MealKey, string> = {
   breakfast: "Breakfast",
@@ -9,12 +9,15 @@ export const MEAL_LABEL: Record<MealKey, string> = {
   snack: "Snack",
 };
 
-// Stable assignment based on item id so the same logged item always lands in the
-// same meal slot even though the API doesn't track meals natively.
+export const MEAL_ORDER: MealKey[] = ["breakfast", "lunch", "dinner", "snack"];
+
+// Prefer the meal the user explicitly chose at add-time. Fall back to a
+// stable hash for legacy entries logged before the picker existed.
 export const mealOf = (item: LogItem): MealKey => {
+  if (item.meal) return item.meal;
   const seed = hash(item.id);
   const bucket = seed % 4;
-  return (["breakfast", "lunch", "dinner", "snack"] as MealKey[])[bucket];
+  return MEAL_ORDER[bucket];
 };
 
 export const groupByMeal = (items: LogItem[]): Record<MealKey, LogItem[]> => {
