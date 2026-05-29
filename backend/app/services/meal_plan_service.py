@@ -17,6 +17,8 @@ collection and aggregates grams per food across all stored days that fall in the
 requested window.
 """
 
+import hashlib
+import random
 from datetime import date as date_cls, datetime, timedelta, timezone
 from typing import Dict, List, Optional, Tuple
 
@@ -67,6 +69,82 @@ def _validate_distribution(distribution: Optional[Dict[str, float]]) -> Dict[str
             detail=f"distribution shares must sum to 1.0 (got {total:.3f})",
         )
     return distribution
+
+
+# ---------- Goal-based food pool bias ----------
+#
+# Same target macros can be hit by many food combinations; the choice should
+# reflect the user's *goal* qualitatively, not only quantitatively.
+#
+#   weight_loss → low energy density, lean protein, more vegetables/fiber.
+#                 Drop pure oils & high-fat dairy that are nutritionally cheap
+#                 ways to spike kcal.
+#   maintenance → balanced (no bias).
+#   muscle_gain → bias toward high-protein animal sources + nutrient-dense carbs.
+
+_HEAVY_FAT_FOODS = {
+    "Minyak Zaitun", "Minyak Kelapa", "Mentega", "Selai Kacang",
+    "Keju Cheddar",
+}
+_WEIGHT_LOSS_BLOCKED = _HEAVY_FAT_FOODS | {
+    "Nasi Goreng", "Mie Goreng", "Ayam Goreng", "Batagor", "Gulai Kambing",
+    "Soto Betawi",
+}
+# Lean / volumetric foods preferred for weight loss.
+_WEIGHT_LOSS_PREFERRED = {
+    "Dada Ayam Tanpa Kulit", "Putih Telur", "Ikan Tongkol", "Ikan Tuna",
+    "Ikan Lele", "Udang", "Brokoli", "Bayam", "Kangkung", "Wortel", "Buncis",
+    "Selada", "Timun", "Tomat", "Cottage Cheese", "Greek Yogurt", "Edamame Kupas",
+    "Sayur Brokoli Kukus", "Tumis Kangkung", "Sayur Asem", "Ubi Jalar",
+    "Quinoa Matang", "Apel", "Jeruk", "Pepaya", "Semangka",
+}
+# Dense, anabolic-friendly foods preferred for muscle gain.
+_MUSCLE_GAIN_PREFERRED = {
+    "Dada Ayam Tanpa Kulit", "Paha Ayam", "Daging Sapi Tanpa Lemak",
+    "Ikan Salmon", "Ikan Tuna", "Telur Rebus", "Whey Protein Isolate",
+    "Greek Yogurt", "Cottage Cheese", "Selai Kacang", "Oatmeal", "Roti Gandum",
+    "Nasi Merah", "Quinoa Matang", "Ubi Jalar", "Pisang", "Alpukat",
+    "Tempe", "Tahu", "Kacang Almond", "Edamame Kupas",
+    "Rendang Sapi", "Ayam Bakar", "Sate Ayam",
+}
+
+def _apply_goal_bias(pool: List[dict], goal: Optional[str]) -> List[dict]:
+    if goal == "weight_loss":
+        return [f for f in pool if f.get("name") not in _WEIGHT_LOSS_BLOCKED]
+    return pool
+
+
+def _stable_subset(pool: List[dict], seed_key: str, goal: Optional[str], cap: int) -> List[dict]:
+    """
+    Deterministically permute the pool so different days surface different
+    staples — but the same (user, date, goal) re-runs are reproducible. Foods
+    in the goal-preferred set are kept; the rest is shuffled and capped.
+
+    A capped pool is critical for *real* variety: with the full pool every day
+    the ILP solver tends to converge on the same optimum. By restricting which
+    foods the solver can even see per day we force qualitatively different
+    plans across the week while staying reproducible.
+    """
+    if not pool:
+        return pool
+    h = hashlib.sha256(seed_key.encode("utf-8")).hexdigest()
+    rng = random.Random(int(h[:16], 16))
+
+    preferred_names: set[str] = set()
+    if goal == "muscle_gain":
+        preferred_names = _MUSCLE_GAIN_PREFERRED
+    elif goal == "weight_loss":
+        preferred_names = _WEIGHT_LOSS_PREFERRED
+
+    head = [f for f in pool if f.get("name") in preferred_names]
+    tail = [f for f in pool if f.get("name") not in preferred_names]
+    rng.shuffle(head)
+    rng.shuffle(tail)
+    combined = head + tail
+
+    # Keep the cap below total pool size but never starve the solver.
+    effective_cap = max(min(cap, len(combined)), min(8, len(combined)))
+    return combined[:effective_cap]
 
 
 _VEG_BLOCKED_CATEGORY = "Protein Hewani"
@@ -213,11 +291,22 @@ def _build_day_plan(
     foods: List[dict],
     dietary_preference: Optional[str] = None,
     allergies: Optional[List[str]] = None,
+    goal: Optional[str] = None,
 ) -> schemas.DailyMealPlanOut:
     slots: List[schemas.MealSlotOut] = []
     for meal, share in distribution.items():
+        # Pool composition: meal-of-day filter → user prefs → goal bias.
         food_pool = _filter_foods_for_meal(meal, foods)
         food_pool = _apply_user_preferences(food_pool, dietary_preference, allergies)
+        food_pool = _apply_goal_bias(food_pool, goal)
+        # Stable, per-(user, date, meal, goal) windowed subset to drive variety
+        # across days while remaining deterministic.
+        food_pool = _stable_subset(
+            food_pool,
+            seed_key=f"{user_id}|{day.isoformat()}|{meal}|{goal or 'maintenance'}",
+            goal=goal,
+            cap=14 if meal != "snack" else 8,
+        )
         slots.append(_solve_meal_slot(meal, share, targets, food_pool))
 
     total_cal = sum(s.totals.calories for s in slots)
@@ -305,6 +394,7 @@ def generate(
     start = payload.start_date or date_cls.today()
     dietary_pref = user.get("dietary_preference")
     allergies = user.get("allergies")
+    goal = user.get("goal")
     days_out: List[schemas.DailyMealPlanOut] = []
     for offset in range(payload.days):
         d = start + timedelta(days=offset)
@@ -314,7 +404,7 @@ def generate(
             continue
         plan = _build_day_plan(
             user_id, d, distribution, targets, foods,
-            dietary_preference=dietary_pref, allergies=allergies,
+            dietary_preference=dietary_pref, allergies=allergies, goal=goal,
         )
         _plans_col(user_id).document(str(d)).set(_day_to_storage(plan))
         days_out.append(plan)

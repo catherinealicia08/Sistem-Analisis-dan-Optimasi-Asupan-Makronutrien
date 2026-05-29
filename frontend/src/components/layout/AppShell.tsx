@@ -5,7 +5,9 @@ import { MobileBottomNav } from "./MobileBottomNav";
 
 export function AppShell() {
   return (
-    <div className="min-h-[100dvh] bg-canvas">
+    // overflow-x-hidden prevents horizontal page scroll so the fixed sidebar
+    // can never be visually overlapped by content slid to the left.
+    <div className="min-h-[100dvh] overflow-x-hidden bg-canvas">
       <Sidebar />
 
       <header className="sticky top-0 z-20 flex h-14 items-center justify-between border-b border-ink-200 bg-surface px-4 lg:hidden">
@@ -25,8 +27,8 @@ export function AppShell() {
         </div>
       </header>
 
-      <main className="lg:pl-64">
-        <div className="mx-auto w-full max-w-[1600px] px-4 pb-24 pt-4 sm:px-6 lg:px-8 lg:pt-8 lg:pb-12">
+      <main className="min-w-0 overflow-x-hidden lg:pl-64">
+        <div className="mx-auto w-full min-w-0 max-w-[1600px] px-4 pb-24 pt-4 sm:px-6 lg:px-8 lg:pt-8 lg:pb-12">
           <Outlet />
         </div>
       </main>

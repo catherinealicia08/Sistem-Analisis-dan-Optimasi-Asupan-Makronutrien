@@ -50,7 +50,7 @@ export function Sidebar() {
   }, []);
 
   return (
-    <aside className="hidden lg:flex lg:fixed lg:inset-y-0 lg:left-0 lg:w-64 lg:flex-col lg:border-r lg:border-ink-200 lg:bg-surface">
+    <aside className="hidden lg:flex lg:fixed lg:inset-y-0 lg:left-0 lg:z-30 lg:w-64 lg:flex-col lg:border-r lg:border-ink-200 lg:bg-surface">
       <div className="flex h-16 items-center gap-2 px-6">
         <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-brand-500 text-white">
           <Sparkle size={18} weight="fill" />

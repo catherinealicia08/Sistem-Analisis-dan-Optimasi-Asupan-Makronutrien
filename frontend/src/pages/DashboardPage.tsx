@@ -71,8 +71,8 @@ export function DashboardPage({ user, analysis, weekly, date }: Props) {
       </section>
 
       {/* Daily Progress + Macros */}
-      <section className="grid gap-6 lg:grid-cols-3">
-        <div className="card flex flex-col items-center lg:col-span-1">
+      <section className="grid min-w-0 gap-6 lg:grid-cols-3">
+        <div className="card flex flex-col items-center min-w-0 lg:col-span-1">
           <div className="flex w-full items-center justify-between">
             <h2 className="text-base font-semibold text-ink-900">Daily Progress</h2>
           </div>
@@ -168,16 +168,22 @@ export function DashboardPage({ user, analysis, weekly, date }: Props) {
         <div className="card flex flex-col">
           <div className="mb-3 flex items-start justify-between gap-2">
             <h2 className="text-base font-semibold text-ink-900">Nutritional Insight</h2>
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-brand-50 text-brand-700">
+            <div className={`flex h-8 w-8 items-center justify-center rounded-lg ${insightHeader(primaryInsight).iconBg}`}>
               <Lightbulb size={16} weight="fill" />
             </div>
           </div>
           {analysis && primaryInsight ? (
             <>
-              <p className="text-sm leading-relaxed text-ink-700">
-                Great job! Your <span className="font-semibold text-ink-900">{primaryInsight.nutrient.toLowerCase()}</span> intake is{" "}
-                {primaryInsight.severity === "low" ? "on track" : "off target"} this week.
-              </p>
+              {(() => {
+                const head = insightHeader(primaryInsight);
+                return (
+                  <p className="text-sm leading-relaxed text-ink-700">
+                    <span className={`font-semibold ${head.leadColor}`}>{head.lead} </span>
+                    Your <span className="font-semibold text-ink-900">{primaryInsight.nutrient.toLowerCase()}</span> intake is{" "}
+                    {head.statusLabel} this week.
+                  </p>
+                );
+              })()}
               <p className="mt-2 text-sm leading-relaxed text-ink-500">
                 {primaryInsight.message}
               </p>
@@ -188,7 +194,8 @@ export function DashboardPage({ user, analysis, weekly, date }: Props) {
           ) : analysis ? (
             <>
               <p className="text-sm leading-relaxed text-ink-700">
-                Your macros are balanced for today. Keep your protein intake consistent post-workout for steady recovery.
+                <span className="font-semibold text-brand-700">Nice work — </span>
+                your macros sit within target today. Keep this rhythm to stay on plan.
               </p>
               <div className="mt-auto pt-4">
                 <button className="btn-ghost w-full">View Full Analysis</button>
@@ -201,4 +208,44 @@ export function DashboardPage({ user, analysis, weekly, date }: Props) {
       </section>
     </div>
   );
+}
+
+interface InsightHeader {
+  lead: string;
+  leadColor: string;
+  iconBg: string;
+  statusLabel: string;
+}
+
+function insightHeader(insight: { severity: "low" | "medium" | "high" } | null): InsightHeader {
+  if (!insight) {
+    return {
+      lead: "All good —",
+      leadColor: "text-brand-700",
+      iconBg: "bg-brand-50 text-brand-700",
+      statusLabel: "on track",
+    };
+  }
+  if (insight.severity === "high") {
+    return {
+      lead: "Heads up —",
+      leadColor: "text-red-600",
+      iconBg: "bg-red-50 text-red-600",
+      statusLabel: "well below target",
+    };
+  }
+  if (insight.severity === "medium") {
+    return {
+      lead: "Worth a tweak —",
+      leadColor: "text-amber-600",
+      iconBg: "bg-amber-50 text-amber-600",
+      statusLabel: "off target",
+    };
+  }
+  return {
+    lead: "Nice work —",
+    leadColor: "text-brand-700",
+    iconBg: "bg-brand-50 text-brand-700",
+    statusLabel: "close to target",
+  };
 }

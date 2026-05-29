@@ -591,7 +591,7 @@ bahwa optimasi formal memberikan keuntungan yang nyata dibandingkan
 pemilihan makanan secara intuitif.
 
 \subsection{Hasil Perencanaan Menu dan Daftar Belanja}
-Pada konfigurasi yang sama, modul perencana menghasilkan tujuh menu lengkap (28 \textit{slot}). Setiap \textit{slot} menyelesaikan ILP dalam waktu sub-detik karena $|F|\le 30$ setelah pemfilteran kategori. Distribusi tiap hari memenuhi target $T_K\pm 3{,}5\%$, $T_P\pm 4\%$. Daftar belanja teragregasi untuk tujuh hari menghasilkan, antara lain, Roti Gandum $\approx2{,}1$~kg, Oatmeal $\approx1{,}5$~kg, Daging Sapi $\approx1{,}5$~kg, Tempe $\approx1{,}5$~kg, Pisang $\approx14$~butir, Yogurt $\approx500$~g. 
+Pada konfigurasi yang sama, modul perencana menghasilkan tujuh menu lengkap (28 \textit{slot}). Setiap \textit{slot} menyelesaikan ILP dalam waktu sub-detik karena $|F|\le 14$ setelah pemfilteran kategori dan \textit{windowing} \textit{pool} per (\textit{user}, tanggal, tujuan) yang memastikan variasi rekomendasi antarhari. Distribusi tiap hari memenuhi target $T_K\pm 3{,}5\%$, $T_P\pm 4\%$. Daftar belanja teragregasi untuk tujuh hari menghasilkan, antara lain, Roti Gandum $\approx2{,}1$~kg, Oatmeal $\approx1{,}5$~kg, Daging Sapi $\approx1{,}5$~kg, Tempe $\approx1{,}5$~kg, Pisang $\approx14$~butir, Yogurt $\approx500$~g. 
 Hasil tersebut menunjukkan bahwa keluaran optimasi dapat diterjemahkan
 secara langsung menjadi kebutuhan bahan pangan yang terukur. Dengan
 demikian, proses analisis nutrisi tidak berhenti pada rekomendasi
@@ -602,7 +602,7 @@ untuk perencanaan konsumsi dan pengadaan bahan makanan.
 Untuk jendela tujuh hari dengan asupan disimulasikan menyentuh $\pm 8\%$ target, $S_K{=}88$, $S_P{=}81$, $S_C{=}79$, $S_F{=}74$. Maka NAS $= 0{,}4(88)+0{,}3(81)+0{,}2(79)+0{,}1(74) = 82{,}3$, masuk klasifikasi \textit{Good} ($70\le\text{NAS}<85$). Rerata keseimbangan energi $-12$~kcal/hari menandakan pengguna terjaga di sekitar target. Penurunan berat $0{,}4$~kg pada 14~hari konsisten dengan kerangka Hall~\cite{hall2011quantification}.
 
 \subsection{Analisis Komputasi}
-Solver CBC menyelesaikan persoalan tunggal ($\sim$96 variabel, $\sim$110 kendala) dalam $<1$~detik. Persoalan perencanaan tujuh hari adalah 28 persoalan independen yang dijalankan berurutan, total $<5$~detik---memenuhi kebutuhan interaksi \textit{real-time}. Modul progres bekerja $O(n)$ terhadap jendela hari. Meskipun ILP secara teoritis NP-Hard, ukuran masalah yang relatif kecil (15--30 kandidat makanan setelah filtering) memungkinkan CBC memperoleh solusi optimal dalam waktu singkat.
+Solver CBC menyelesaikan persoalan tunggal ($\sim$96 variabel, $\sim$110 kendala) dalam $<1$~detik. Persoalan perencanaan tujuh hari adalah 28 persoalan independen yang dijalankan berurutan, total $<5$~detik---memenuhi kebutuhan interaksi \textit{real-time}. Modul progres bekerja $O(n)$ terhadap jendela hari. Meskipun ILP secara teoritis NP-Hard, ukuran masalah yang relatif kecil (8--14 kandidat makanan setelah filtering kategori dan \textit{windowing} \textit{pool}) memungkinkan CBC memperoleh solusi optimal dalam waktu singkat.
 
 \subsection{Kesesuaian dengan Domain-Specific Computation}
 

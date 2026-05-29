@@ -160,9 +160,9 @@ export function FoodLoggerPage({ userId, date, log, onChange }: Props) {
   }
 
   return (
-    <div className="grid gap-6 lg:grid-cols-[1fr_360px]">
+    <div className="grid min-w-0 gap-6 xl:grid-cols-[minmax(0,1fr)_360px]">
       {/* Browser */}
-      <div className="card">
+      <div className="card min-w-0">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <h2 className="text-base font-semibold text-ink-900">Search Foods</h2>
           <button className="hidden h-9 w-9 items-center justify-center rounded-lg border border-ink-200 text-ink-500 hover:bg-ink-50 sm:inline-flex" aria-label="Calendar">
@@ -218,7 +218,7 @@ export function FoodLoggerPage({ userId, date, log, onChange }: Props) {
           </div>
         )}
 
-        <div className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
+        <div className="mt-5 grid min-w-0 grid-cols-1 gap-4 sm:grid-cols-2 2xl:grid-cols-3">
           {!foods && Array.from({ length: 6 }).map((_, i) => (
             <Skeleton key={i} className="h-64" />
           ))}

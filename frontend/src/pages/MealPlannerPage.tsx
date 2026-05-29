@@ -158,9 +158,9 @@ export function MealPlannerPage() {
         )}
       </div>
 
-      <section className="grid gap-6 lg:grid-cols-3">
+      <section className="grid min-w-0 gap-6 xl:grid-cols-3">
         {/* Today's plan */}
-        <div className="card lg:col-span-2">
+        <div className="card min-w-0 xl:col-span-2">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Sun size={18} weight="fill" className="text-amber-500" />
