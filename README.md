@@ -103,8 +103,9 @@ pip install -r requirements.txt
 # Set a strong secret in production
 export MACROPLUS_JWT_SECRET="change-me"
 
-# Firestore credentials: either FIREBASE_CREDENTIALS_JSON env var (JSON blob)
-# or place serviceAccountKey.json in backend/.
+# Firestore credentials:
+# - deployment: set FIREBASE_CREDENTIALS_JSON to the service-account JSON blob
+# - local: set FIREBASE_KEY_PATH or place serviceAccountKey.json in backend/
 uvicorn app.main:app --reload --port 8000
 ```
 

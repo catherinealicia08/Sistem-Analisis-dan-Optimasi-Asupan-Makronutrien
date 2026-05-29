@@ -3,16 +3,21 @@ Firebase Firestore connection module.
 Menggantikan SQLAlchemy engine/session dengan Firebase Admin SDK.
 
 Credentials dibaca dari environment variable FIREBASE_CREDENTIALS_JSON
-(isi dari service account JSON file).
+(isi dari service account JSON file), FIREBASE_KEY_PATH, atau fallback file
+serviceAccountKey.json untuk local development.
 """
 
 import os
 import json
+from pathlib import Path
+
 import firebase_admin
 from firebase_admin import credentials, firestore
 from dotenv import load_dotenv
 
-load_dotenv()
+BACKEND_DIR = Path(__file__).resolve().parents[1]
+
+load_dotenv(BACKEND_DIR / ".env")
 
 _app = None
 
@@ -37,16 +42,19 @@ def _init_firebase():
         creds_dict = json.loads(creds_json)
         cred = credentials.Certificate(creds_dict)
     else:
-        # Local development: coba baca dari file serviceAccountKey.json
-        key_path = os.path.join(os.path.dirname(__file__), "..", "serviceAccountKey.json")
-        if os.path.exists(key_path):
-            cred = credentials.Certificate(key_path)
-        else:
+        # Local development: env path first, then backend/serviceAccountKey.json.
+        key_path = os.environ.get("FIREBASE_KEY_PATH")
+        credential_path = Path(key_path).expanduser() if key_path else BACKEND_DIR / "serviceAccountKey.json"
+        if not credential_path.is_absolute():
+            credential_path = BACKEND_DIR / credential_path
+
+        if not credential_path.exists():
             raise RuntimeError(
                 "Firebase credentials tidak ditemukan. "
-                "Set env var FIREBASE_CREDENTIALS_JSON atau letakkan "
-                "serviceAccountKey.json di folder backend/"
+                "Set FIREBASE_CREDENTIALS_JSON untuk deployment, atau "
+                "FIREBASE_KEY_PATH/serviceAccountKey.json untuk local development."
             )
+        cred = credentials.Certificate(str(credential_path))
 
     _app = firebase_admin.initialize_app(cred)
 
