@@ -2,8 +2,10 @@ import axios, { AxiosError } from "axios";
 
 export const TOKEN_KEY = "macroplus.token";
 
+const apiBaseUrl = import.meta.env.VITE_API_URL?.replace(/\/$/, "") || "/api";
+
 export const http = axios.create({
-  baseURL: import.meta.env.VITE_API_URL ?? "/api",
+  baseURL: apiBaseUrl,
   headers: { "Content-Type": "application/json" },
 });
 
