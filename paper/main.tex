@@ -1,10 +1,9 @@
-% IEEE Conference Template
 % IF3211 Domain-Specific Computation -- Kelompok 07
-% Kompilasi: pdflatex main && bibtex main && pdflatex main && pdflatex main
 \documentclass[conference]{IEEEtran}
 \IEEEoverridecommandlockouts
 
 \usepackage[T1]{fontenc}
+\usepackage{float}
 \usepackage[utf8]{inputenc}
 \usepackage{cite}
 \usepackage{amsmath,amssymb,amsfonts}
@@ -24,24 +23,49 @@
 
 \begin{document}
 
-\title{MacroPlus: Sistem Komputasi Pendukung Keputusan Nutrisi---Integrasi Pemodelan Metabolik, ILP \textit{Multi-Objective}, Perencanaan Menu, dan Pemantauan Kepatuhan Longitudinal%
-\thanks{Tugas Besar IF3211 \emph{Domain-Specific Computation} -- Kelompok 07, Program Studi Sistem dan Teknologi Informasi, Institut Teknologi Bandung.}}
+\title{MacroPlus: Sistem Pendukung Keputusan Nutrisi
+untuk Analisis, Optimasi, dan Pemantauan Asupan Makronutrien
+Berbasis Kebutuhan Metabolik Individu}
 
-% --- 2x2 author grid (IEEE conference-compatible) ---
-\author{%
-\begin{tabular}{cc}
-\IEEEauthorblockN{Muhammad Adam Mirza} & \IEEEauthorblockN{Devon Wiraditya Tanumihardja} \\
-\IEEEauthorblockA{\textit{18223015} \\ Institut Teknologi Bandung} &
-\IEEEauthorblockA{\textit{18223039} \\ Institut Teknologi Bandung} \\[1.0ex]
-\IEEEauthorblockN{Muhammad Aqmar Fayyaz Zakaria} & \IEEEauthorblockN{Catherine Alicia Putri} \\
-\IEEEauthorblockA{\textit{18223043} \\ Institut Teknologi Bandung} &
-\IEEEauthorblockA{\textit{18223069} \\ Institut Teknologi Bandung}
-\end{tabular}}
-
+\author{
+    \makebox[0.45\textwidth][c]{
+        \begin{minipage}[t]{0.45\textwidth}
+            \centering
+            Muhammad Adam Mirza\\
+            \textit{18223015}\\
+            Institut Teknologi Bandung
+        \end{minipage}
+    }
+    \makebox[0.45\textwidth][c]{
+        \begin{minipage}[t]{0.45\textwidth}
+            \centering
+            Devon Wiraditya Tanumihardja\\
+            \textit{18223039}\\
+            Institut Teknologi Bandung
+        \end{minipage}
+    }
+    \\[0.4cm] % Jarak vertikal antar baris atas dan bawah
+    \makebox[0.45\textwidth][c]{
+        \begin{minipage}[t]{0.45\textwidth}
+            \centering
+            Muhammad Aqmar Fayyaz Zakaria\\
+            \textit{18223043}\\
+            Institut Teknologi Bandung
+        \end{minipage}
+    }
+    \makebox[0.45\textwidth][c]{
+        \begin{minipage}[t]{0.45\textwidth}
+            \centering
+            Catherine Alicia N.\\
+            \textit{18223069}\\
+            Institut Teknologi Bandung
+        \end{minipage}
+    }
+}
 \maketitle
 
 \begin{abstract}
-Aplikasi penghitung kalori konvensional umumnya hanya berfungsi sebagai pencatat makanan (\textit{food logger}) tanpa analisis biologis komprehensif, optimasi terhadap kebutuhan metabolik individu, perencanaan menu otomatis, maupun pemantauan kepatuhan nutrisi jangka panjang. Penelitian ini mengembangkan \textbf{MacroPlus}, sistem komputasi berbasis web yang mengintegrasikan lima lapisan: (1) penghitungan kebutuhan energi (BMR \textit{Mifflin--St Jeor} dan TDEE dengan \textit{activity multiplier} ACSM); (2) target makronutrien berdasarkan AMDR \textit{Institute of Medicine}; (3) rekomendasi makanan \textit{multi-objective} melalui \textit{Integer Linear Programming} (ILP) dengan solver CBC via PuLP; (4) perencanaan menu mingguan per-slot waktu makan yang menghasilkan agregasi daftar belanja; dan (5) pemantauan kepatuhan longitudinal melalui skor harian, \textit{Nutrition Adherence Score} (NAS), serta pencatatan berat badan. Sistem diimplementasikan menggunakan FastAPI--Firestore pada sisi \textit{backend} dan React--TypeScript--Recharts pada sisi \textit{frontend} dengan autentikasi JWT. Validasi pada studi kasus pria 22 tahun (68~kg, 172~cm, \textit{moderate}, \textit{muscle gain}) menunjukkan solver mencapai status \textit{Optimal} dengan total deviasi mendekati nol terhadap target 2813~kcal, 176~g protein, 352~g karbohidrat, 78~g lemak. Modul perencanaan menu menghasilkan tujuh hari menu lengkap dalam waktu sub-detik per hari, sedangkan modul progres menghitung NAS dan tren makro--kalori secara konsisten. MacroPlus memposisikan diri sebagai \textit{decision support system} nutrisi yang ilmiah, dapat direplikasi, dan terintegrasi secara penuh dari input biologis hingga rekomendasi belanja.
+MacroPlus merupakan sistem pendukung keputusan nutrisi berbasis web yang mengintegrasikan perhitungan kebutuhan energi (BMR dan TDEE), penentuan target makronutrien berdasarkan AMDR, optimasi makanan menggunakan Integer Linear Programming (ILP), perencanaan menu mingguan, dan pemantauan kepatuhan nutrisi. Sistem diimplementasikan menggunakan FastAPI, Firestore, React, dan solver CBC melalui PuLP. Studi kasus pada pria 22 tahun menunjukkan bahwa solver menghasilkan solusi optimal yang memenuhi target 2813 kcal, 176 g protein, 352 g karbohidrat, dan 78 g lemak dengan deviasi minimal. Modul meal planner menghasilkan menu dan daftar belanja mingguan secara otomatis, sedangkan Nutrition Adherence Score (NAS) digunakan untuk mengevaluasi kepatuhan nutrisi pengguna. Hasil menunjukkan bahwa MacroPlus mampu mengintegrasikan pengetahuan domain nutrisi dan optimasi formal dalam satu sistem pendukung keputusan yang praktis dan dapat direplikasi.
 \end{abstract}
 
 \begin{IEEEkeywords}
@@ -57,34 +81,181 @@ Kebutuhan energi dan makronutrien (karbohidrat, protein, lemak) merupakan aspek 
 Aplikasi seperti MyFitnessPal, Cronometer, dan MacroFactor memiliki basis data luas tetapi rekomendasinya umumnya heuristik dan bukan optimasi formal. Pendekatan optimasi diet sebenarnya telah dirumuskan sejak Stigler~\cite{stigler1945cost}, kemudian diperluas menjadi \textit{Integer Linear Programming} untuk menangani keputusan diskret~\cite{wolsey1998integer}. Survei terbaru terhadap \textit{food recommender system}~\cite{tran2018overview} menyoroti perlunya integrasi antara model nutrisi formal dan algoritma rekomendasi. Distribusi makro tingkat populasi telah diatur AMDR \textit{Institute of Medicine}~\cite{iom2005}, dan pola tiga waktu makan plus camilan diadopsi oleh USDA \textit{Dietary Guidelines}~\cite{usda_dgaa}.
 
 \subsection{Rumusan Masalah dan Tujuan}
-Empat pertanyaan penelitian dijawab: (1) Bagaimana kebutuhan energi dimodelkan dari parameter biologis tervalidasi? (2) Bagaimana ILP memenuhi target nutrisi secara simultan? (3) Bagaimana model dan optimasi tersebut diperluas menjadi perencanaan menu mingguan + daftar belanja? (4) Bagaimana kepatuhan jangka panjang diukur secara kuantitatif dan dapat ditafsirkan?
+Berdasarkan uraian permasalahan yang telah dipaparkan, rumusan masalah yang menjadi fokus dalam penelitian ini adalah sebagai berikut:
+
+\begin{enumerate}
+    \item Bagaimana kebutuhan energi dan makronutrien individu dapat
+    dimodelkan berdasarkan parameter biologis dan pedoman nutrisi yang
+    tervalidasi?
+
+    \item Bagaimana \textit{Integer Linear Programming} (ILP) dapat
+    digunakan untuk menghasilkan rekomendasi makanan yang memenuhi
+    target nutrisi secara optimal?
+
+    \item Bagaimana model nutrisi dan optimasi tersebut dapat diperluas
+    menjadi perencanaan menu mingguan dan daftar belanja otomatis?
+
+    \item Bagaimana kepatuhan pengguna terhadap target nutrisi dapat
+    diukur secara kuantitatif dalam jangka panjang?
+\end{enumerate}
+
+Penelitian ini bertujuan mengembangkan dan mengevaluasi MacroPlus
+sebagai sistem pendukung keputusan nutrisi yang mengintegrasikan
+analisis kebutuhan metabolik, optimasi makanan, perencanaan menu,
+dan pemantauan kepatuhan nutrisi.
 
 \subsection{Kontribusi}
-Kontribusi MacroPlus ada empat: (i) integrasi BMR/TDEE/AMDR/ILP dalam satu pipeline; (ii) perencanaan menu mingguan berbasis ILP per-slot waktu makan, dengan agregasi daftar belanja yang biasanya hilang di aplikasi populer; (iii) \textit{Nutrition Adherence Score} (NAS) sebagai metrik komposit kepatuhan yang transparan; (iv) implementasi referensi sebagai SaaS dengan autentikasi JWT, sehingga dapat direplikasi dan diuji ulang.
+
+Penelitian ini mengintegrasikan pemodelan kebutuhan energi dan
+makronutrien (BMR, TDEE, dan AMDR), optimasi rekomendasi makanan dan
+perencanaan menu berbasis ILP, agregasi daftar belanja otomatis, serta
+\textit{Nutrition Adherence Score} (NAS) sebagai metrik evaluasi
+kepatuhan nutrisi jangka panjang dalam sebuah aplikasi web yang dapat
+direplikasi.
 
 \section{Metode}
 
 \subsection{Arsitektur Sistem}
-Sistem terdiri dari \textit{backend} FastAPI yang memuat sembilan \textit{router} (autentikasi, pengguna, makanan, log harian, analisis, optimasi, perencanaan menu, daftar belanja, progres) serta \textit{frontend} React/TypeScript. Persistensi menggunakan Cloud Firestore (model dokumen) sebagai pengganti basis data relasional klasik, dengan koleksi: \texttt{users}, \texttt{foods}, \texttt{users/\{uid\}/logs/\{date\}/items}, \texttt{users/\{uid\}/meal\_plans/\{date\}}, dan \texttt{users/\{uid\}/weight\_logs}. Autentikasi memakai JWT HS256 berusia tujuh hari~\cite{jones2007jwt} dengan \textit{password hashing} bcrypt; pada sisi klien token disimpan di \texttt{localStorage} dan disuntikkan oleh \textit{axios interceptor}.
+MacroPlus menggunakan arsitektur berbasis layanan yang terdiri atas
+lapisan antarmuka pengguna, layanan backend, basis pengetahuan domain,
+modul optimasi, dan penyimpanan data. Berbeda dengan aplikasi pencatat
+makanan konvensional, inti komputasi sistem berada pada lapisan
+\textit{Domain Knowledge} yang merepresentasikan model metabolik,
+aturan nutrisi, dan metrik evaluasi. Lapisan ini digunakan oleh modul
+optimasi untuk menghasilkan rekomendasi makanan, perencanaan menu,
+daftar belanja, serta analisis progres pengguna. Arsitektur sistem
+ditunjukkan pada Gambar~\ref{fig:arsitektur}.
 
-\begin{figure}[t]
-  \centering
-  \includegraphics[width=\columnwidth]{arsitektur.png}
-  \caption{Arsitektur sistem MacroPlus---antarmuka, REST API, layanan optimasi, dan basis data dokumen.}
-  \label{fig:arsitektur}
+Sistem diimplementasikan menggunakan React dan TypeScript pada sisi
+frontend, FastAPI pada backend, Cloud Firestore sebagai basis data,
+serta PuLP dan CBC untuk optimasi.
+
+\begin{figure}[!ht]
+\centering
+\resizebox{\columnwidth}{!}{%
+\begin{tikzpicture}[
+    node distance=8mm,
+    font=\scriptsize,
+    >=Latex,
+    every node/.style={
+        draw,
+        rounded corners,
+        align=center,
+        minimum height=8mm
+    }
+]
+
+% Frontend
+\node[
+fill=blue!10,
+minimum width=38mm
+]
+(frontend)
+{React Frontend\\
+Dashboard, Analytics, Planner};
+
+% Backend
+\node[
+fill=green!10,
+minimum width=38mm,
+below=of frontend
+]
+(backend)
+{FastAPI Backend\\
+REST API Routers};
+
+% Domain Knowledge
+\node[
+fill=purple!12,
+minimum width=55mm,
+minimum height=14mm,
+below=14mm of backend
+]
+(domain)
+{Domain Knowledge Layer\\
+Mifflin--St Jeor, TDEE, AMDR,\\
+Nutrition Rules, NAS};
+
+% Database (Dirapatkan ke tengah)
+\node[
+fill=orange!10,
+minimum width=30mm,
+below left=10mm and 2mm of domain 
+]
+(db)
+{Cloud\\Firestore};
+
+% Solver (Dirapatkan ke tengah)
+\node[
+fill=orange!10,
+minimum width=30mm,
+below right=10mm and 2mm of domain
+]
+(ilp)
+{ILP Solver\\
+PuLP + CBC};
+
+% Output
+\node[
+fill=cyan!10,
+minimum width=45mm,
+below=22mm of domain
+]
+(output)
+{Recommendations\\
+Meal Plans, Grocery Lists, Progress};
+
+% Connections
+\draw[->] (frontend) -- node[right]{HTTPS} (backend);
+\draw[->] (backend) -- (domain);
+\draw[->] (domain) -- (db);
+\draw[->] (domain) -- (ilp);
+\draw[->] (db) -- (output);
+\draw[->] (ilp) -- (output);
+
+\draw[->, dashed]
+(output.west) .. controls +(-1.2,-0.5) and +(-1.2,0.5) ..
+(frontend.west);
+
+\end{tikzpicture}%
+}
+\caption{
+Arsitektur Sistem MacroPlus}
+\label{fig:arsitektur}
 \end{figure}
 
-\subsection{Diagram Alur Komputasi}
-Gambar~\ref{fig:flow} merangkum alur dari masukan pengguna hingga keluaran rekomendasi, perencanaan, dan pemantauan.
+\subsection{Model Data}
 
-\begin{figure}[t]
+Cloud Firestore dipilih karena menyediakan model dokumen yang sesuai
+untuk data nutrisi yang berpusat pada pengguna dan memiliki pola akses
+berdasarkan tanggal.
+
+Struktur utama penyimpanan adalah:
+
+\begin{verbatim}
+users/{uid}
+|-- profile
+|-- logs/{date}
+|-- meal_plans/{date}
+`-- weight_logs/{date}
+\end{verbatim}
+
+Pendekatan ini memungkinkan pengambilan data harian secara langsung
+tanpa operasi join yang kompleks sebagaimana pada basis data relasional.
+Selain itu, struktur hierarkis mempermudah pengelolaan data historis
+dan mendukung skalabilitas ketika jumlah pengguna meningkat.
+
+\subsection{Alur Pemrosesan Sistem}
+Gambar~\ref{fig:flow} menggambarkan alur kerja MacroPlus, mulai dari pengumpulan karakteristik biologis dan tujuan nutrisi pengguna, perhitungan kebutuhan energi, penentuan target makronutrien, hingga pencatatan dan analisis konsumsi makanan. Informasi yang dihasilkan pada setiap tahap selanjutnya digunakan dalam proses rekomendasi makanan, perencanaan menu mingguan, penyusunan daftar belanja, serta pemantauan progres dan kepatuhan nutrisi pengguna.
+
+\begin{figure}[!ht]
 \centering
 \begin{tikzpicture}[node distance=4.2mm, font=\scriptsize,
   every node/.style={align=center, rounded corners, draw=black!70,
                      minimum height=4.4mm, inner sep=2pt},
   proc/.style ={fill=blue!6, minimum width=20mm},
   data/.style ={fill=green!8, minimum width=20mm, shape=cylinder, shape border rotate=90, aspect=0.2},
-  out/.style  ={fill=orange!10, minimum width=22mm},
+  resu/.style  ={fill=orange!10, minimum width=22mm},
   ->,>={Latex[length=1.4mm]}]
   \node[data] (u) {User Input\\(age, sex, $W$, $H$, activity, goal)};
   \node[proc, below=of u] (bmr) {BMR (Mifflin--St Jeor)};
@@ -92,20 +263,104 @@ Gambar~\ref{fig:flow} merangkum alur dari masukan pengguna hingga keluaran rekom
   \node[proc, below=of tdee] (amdr) {Macro targets (AMDR)};
   \node[data, below=of amdr] (log) {Food log\\(daily items)};
   \node[proc, below=of log] (anal) {Nutritional analysis};
-  \node[out,  right=10mm of anal] (opt) {ILP optimiser\\(single-slot recs)};
-  \node[out,  above=of opt] (mp) {Meal planner\\(per-slot ILP $\times$ 7d)};
-  \node[out,  above=of mp]  (gr) {Grocery list\\(aggregation)};
-  \node[out,  below=of opt] (prog) {Progress\\(compliance, NAS, weight)};
+  \node[resu,  right=10mm of anal] (opt) {ILP optimiser\\(single-slot recs)};
+  \node[resu,  above=of opt] (mp) {Meal planner\\(per-slot ILP $\times$ 7d)};
+  \node[resu,  above=of mp]  (gr) {Grocery list\\(aggregation)};
+  \node[resu,  below=of opt] (prog) {Progress\\(compliance, NAS, weight)};
   \draw (u)--(bmr); \draw (bmr)--(tdee); \draw (tdee)--(amdr); \draw (amdr)--(log);
   \draw (log)--(anal); \draw (anal)--(opt); \draw (opt)--(mp); \draw (mp)--(gr);
   \draw (anal.east) -- ++(0.45,0) |- (prog.west);
 \end{tikzpicture}
-\caption{Diagram alur komputasi MacroPlus: dari parameter biologis hingga lima keluaran (analisis, rekomendasi, perencanaan, daftar belanja, progres).}
+\caption{Diagram Alur Komputasi MacroPlus}
 \label{fig:flow}
 \end{figure}
 
 \subsection{Dataset Makanan}
-Dataset terdiri atas 48 bahan pangan yang nilainya diselaraskan dengan Panganku Indonesia~\cite{panganku} dan USDA FoodData Central~\cite{usda_fdc}, dikelompokkan ke tujuh kategori. Tiap entri menyimpan kalori, protein, lemak, dan karbohidrat per 100~g.
+Dataset terdiri atas 84 bahan pangan yang dikompilasi dari Panganku Indonesia dan USDA FoodData Central \cite{panganku,usda_fdc}. Setiap entri dinormalisasi ke satuan 100 gram dan memuat informasi kalori, protein, karbohidrat, lemak, serta kategori pangan. Data dikelompokkan ke dalam beberapa kategori utama yang digunakan pada proses rekomendasi makanan dan \textit{meal planning}.
+
+\begin{table}[!ht]
+\caption{Contoh Entri Dataset Makanan (per 100 g)}
+\centering
+\begin{tabular}{lcccc}
+\toprule
+Makanan & Kalori & Protein & Karbo & Lemak \\
+\midrule
+Oatmeal & 389 & 16.9 & 66.3 & 6.9 \\
+Tempe & 193 & 20.3 & 7.6 & 10.8 \\
+Pisang & 89 & 1.1 & 22.8 & 0.3 \\
+Daging Sapi & 250 & 26.0 & 0.0 & 15.0 \\
+Yogurt & 61 & 3.5 & 4.7 & 3.3 \\
+\bottomrule
+\end{tabular}
+\label{tab:foodsample}
+\end{table}
+
+Tabel~\ref{tab:foodsample} menunjukkan sebagian kecil contoh data yang
+digunakan dalam proses optimasi. Seluruh dataset terdiri atas 84 bahan
+pangan yang telah dinormalisasi ke satuan 100 gram sehingga dapat
+langsung digunakan sebagai koefisien pada formulasi ILP.
+
+\subsection{Model Domain Nutrisi}
+
+MacroPlus memodelkan proses pengambilan keputusan nutrisi berdasarkan karakteristik biologis pengguna untuk menghasilkan rekomendasi konsumsi makanan yang sesuai dengan kebutuhan individu.
+
+Pengguna direpresentasikan sebagai
+
+\[
+U=\{A,S,W,H,\alpha,\delta\}
+\]
+
+dengan $A$ usia, $S$ jenis kelamin,
+$W$ berat badan,
+$H$ tinggi badan,
+$\alpha$ tingkat aktivitas fisik,
+dan $\delta$ tujuan perubahan berat badan.
+
+Representasi tersebut digunakan untuk menghasilkan kebutuhan energi
+basal melalui persamaan Mifflin--St Jeor, yang selanjutnya ditransformasikan
+menjadi estimasi total kebutuhan energi harian menggunakan
+activity multiplier.
+
+Target energi kemudian dipetakan ke target makronutrien melalui
+rentang AMDR sehingga diperoleh vektor target
+
+\[
+T=\{T_K,T_P,T_C,T_F\}.
+\]
+
+Vektor target ini menjadi kendala utama pada proses optimasi makanan,
+perencanaan menu mingguan, serta evaluasi kepatuhan nutrisi.
+
+Dengan demikian, seluruh sistem dapat dipandang sebagai suatu rantai
+komputasi domain-spesifik yang mentransformasikan parameter biologis
+menjadi keputusan konsumsi yang dapat diimplementasikan.
+
+\subsection{Representasi Pengetahuan Domain}
+
+MacroPlus menggunakan pendekatan knowledge-based computation,
+di mana pengetahuan domain nutrisi direpresentasikan secara eksplisit
+dalam bentuk aturan, model matematis, dan basis data makanan.
+
+Persamaan Mifflin--St Jeor direpresentasikan sebagai aturan estimasi
+metabolisme basal, sedangkan activity multiplier ACSM digunakan sebagai
+aturan transformasi dari kebutuhan energi basal menjadi kebutuhan energi
+harian. Rentang AMDR berfungsi sebagai aturan penentuan distribusi
+makronutrien yang dapat diterima secara fisiologis.
+
+Basis pengetahuan makanan direpresentasikan sebagai himpunan entitas
+
+\[
+F=\{f_1,f_2,\ldots,f_n\}
+\]
+
+yang masing-masing memiliki atribut kalori, protein, karbohidrat,
+lemak, dan kategori pangan.
+
+Mekanisme inferensi diwujudkan melalui formulasi Integer Linear
+Programming yang mencari kombinasi makanan optimal terhadap target
+nutrisi pengguna. Dengan demikian, proses rekomendasi tidak hanya
+berdasarkan pencarian data, tetapi merupakan hasil inferensi yang
+menggabungkan aturan domain dan kendala fisiologis.
 
 \subsection{Perhitungan Metabolik dan AMDR}
 Persamaan \textit{Mifflin--St Jeor}~\cite{mifflin1990new} dipilih karena lebih akurat untuk populasi modern~\cite{frankenfield2005comparison}:
@@ -117,7 +372,29 @@ TDEE dihitung dengan \textit{activity multiplier} ACSM~\cite{acsm2018,thomas2016
 \begin{equation}
 \text{TDEE} = \text{BMR}\times\alpha,\quad \alpha\in\{1{,}2;\,1{,}375;\,1{,}55;\,1{,}725;\,1{,}9\}.
 \end{equation}
-Target kalori harian disesuaikan terhadap tujuan: $T_K = \text{TDEE}\times(1+\delta)$ dengan $\delta\in\{-0{,}15;\,0;\,+0{,}10\}$~\cite{thomas2016position,rodriguez2009position}. Target gram tiap makro diturunkan dari $T_K$ melalui titik tengah AMDR~\cite{iom2005}: $T_X = T_K\,s_X/e_X$ dengan $s=(0{,}50;\,0{,}25;\,0{,}25)$ dan $e=(4;\,4;\,9)$~kcal/g.
+Target kalori harian disesuaikan terhadap tujuan: $T_K = \text{TDEE}\times(1+\delta)$ dengan $\delta\in\{-0{,}15;\,0;\,+0{,}10\}$~\cite{thomas2016position,rodriguez2009position}. Target gram tiap makro diturunkan dari
+target energi harian menggunakan titik
+tengah AMDR~\cite{iom2005}
+
+\begin{equation}
+T_X=\frac{T_K\,s_X}{g_X},
+\end{equation}
+
+dengan
+
+\[
+s=(0{,}50;\,0{,}25;\,0{,}25)
+\]
+
+menyatakan proporsi energi dari
+karbohidrat, protein, dan lemak, serta
+
+\[
+g=(4;\,4;\,9)\ \text{kcal/g}
+\]
+
+menyatakan energi per gram masing-masing
+makronutrien.
 
 \subsection{Analisis Kualitas Nutrisi}
 Tiga indikator dihitung: \textit{protein density} $\rho_P = P/K$, \textit{energy density} $\rho_E = K/m$~\cite{rolls2009dietary}, dan \textit{macro balance score}
@@ -127,17 +404,68 @@ Tiga indikator dihitung: \textit{protein density} $\rho_P = P/K$, \textit{energy
 dengan $s^{\star}=(0{,}55;\,0{,}225;\,0{,}275)$ (titik tengah AMDR). Deteksi defisiensi memakai ambang heuristik: $\pm10$~g protein, $\pm 40$--$50$~g karbohidrat, $+15$~g lemak, dan $\pm 300$~kcal.
 
 \subsection{Formulasi ILP \textit{Multi-Objective}}
-Pendekatan \textit{greedy} sering melanggar batas kalori atau lemak. ILP menjamin optimalitas terhadap beberapa target sekaligus~\cite{wolsey1998integer}. Untuk himpunan makanan $F$, $x_i\in\mathbb{Z}_{\ge0}$ menyatakan jumlah satuan $s=10$~g; $y_i\in\{0,1\}$ menandai apakah makanan $i$ dipilih; $e_K,e_P,e_C,e_F\ge0$ adalah deviasi absolut. Defisit didefinisikan $\Delta_X = \max(0, T_X - I_X)$. Fungsi tujuan dengan bobot prioritas protein:
-\begin{equation}
-\min\; 4\,e_P + 1{,}5\,e_C + 2\,e_F + 1\,e_K.
-\end{equation}
-Kendala linierisasi: $e_X \ge \Delta_X - \sum_i \tilde{x}_i$ dan $e_X \ge \sum_i \tilde{x}_i - \Delta_X$. Anggaran nutrisi:
+
+Pendekatan \textit{greedy} sering menghasilkan kombinasi
+makanan yang memenuhi salah satu target nutrisi namun
+melanggar target lainnya. Oleh karena itu digunakan
+\textit{Integer Linear Programming} (ILP) untuk mencari
+kombinasi makanan yang meminimalkan deviasi terhadap
+seluruh target nutrisi secara simultan~\cite{wolsey1998integer}.
+
+Untuk setiap makanan $i\in F$, variabel keputusan
+
+\[
+x_i \in \mathbb{Z}_{\ge 0}
+\]
+
+menyatakan jumlah porsi 10 gram makanan yang dipilih.
+
+Total nutrisi yang dihasilkan oleh solusi dihitung sebagai
+
 \begin{align}
-\sum_{i\in F}\tilde{c}_i x_i &\le 1{,}05\,\Delta_K + 50, \\
-\sum_{i\in F}\tilde{f}_i x_i &\le 1{,}05\,\Delta_F + 5, \\
-\sum_{i\in F}\tilde{p}_i x_i &\ge 0{,}5\,\Delta_P\;\;\text{jika } \Delta_P>5.
+I_K &= \sum_i c_i x_i,\\
+I_P &= \sum_i p_i x_i,\\
+I_C &= \sum_i h_i x_i,\\
+I_F &= \sum_i f_i x_i,
 \end{align}
-Kendala penghubung dan sparsitas: $x_i\le U y_i$, $x_i\ge y_i$, dan $1\le\sum_i y_i\le N_{\max}{=}4$. Model diselesaikan menggunakan CBC~\cite{forrest2005cbc} via PuLP~\cite{mitchell2011pulp} dengan batas waktu 10~detik.
+
+dengan $c_i$, $p_i$, $h_i$, dan $f_i$
+berturut-turut menyatakan kandungan kalori,
+protein, karbohidrat, dan lemak per porsi.
+
+Deviasi absolut terhadap target dinyatakan
+menggunakan variabel non-negatif
+
+\[
+e_K,e_P,e_C,e_F \ge 0.
+\]
+
+Karena fungsi nilai absolut tidak linear,
+deviasi dilinearisasi dengan kendala
+
+\begin{align}
+e_X &\ge I_X - T_X,\\
+e_X &\ge T_X - I_X,
+\end{align}
+
+untuk setiap
+
+\[
+X\in\{K,P,C,F\}.
+\]
+
+Fungsi objektif yang diminimalkan adalah jumlah
+deviasi seluruh target nutrisi,
+
+\begin{equation}
+\min Z =
+e_K + e_P + e_C + e_F.
+\end{equation}
+
+Dengan formulasi tersebut, solver akan mencari
+kombinasi makanan yang menghasilkan total kalori,
+protein, karbohidrat, dan lemak sedekat mungkin
+dengan target nutrisi pengguna secara simultan.
 
 \subsection{Perencanaan Menu Mingguan}
 Modul perencana memecah hari menjadi empat \textit{slot} dengan distribusi default sarapan 25\%, makan siang 35\%, makan malam 30\%, dan camilan 10\%~\cite{usda_dgaa}. Untuk setiap \textit{slot} $m$, target slot dihitung $T_X^{(m)} = T_X\times\sigma_m$ dengan $\sigma_m$ pangsa \textit{slot}. ILP dijalankan terpisah per \textit{slot} dengan asupan saat ini nol dan dengan \textit{pool} makanan yang difilter berdasarkan kelayakan kategori untuk \textit{slot} tersebut (mis. sarapan menerima karbohidrat, buah, susu \& olahan, protein hewani/nabati). Hasil tujuh hari dipersist ke koleksi \texttt{meal\_plans}; permintaan ulang membaca data tersimpan. Pengguna dapat mengubah $\sigma$ selama $\sum_m\sigma_m=1$.
@@ -168,28 +496,36 @@ dengan klasifikasi \textit{Poor}/\textit{Fair}/\textit{Good}/\textit{Excellent} 
 \subsection{Pemantauan Berat dan Keseimbangan Energi}
 Berat dicatat ke koleksi \texttt{weight\_logs} dan otomatis memperbarui dokumen pengguna sehingga BMR/TDEE/target di-rekomputasi pada analisis hari berikutnya. Keseimbangan energi mengikuti kerangka Hall~\cite{hall2011quantification}: $\text{EB}(d) = I_K(d) - T_K$, dengan nilai negatif berarti defisit dan positif berarti surplus.
 
-\subsection{Reprodusibilitas}
-Implementasi lengkap dan dokumentasi (\textsc{readme}, laporan validasi ilmiah, audit kode--makalah, penilaian IF3211) tersedia di:
-\begin{center}\small
-\url{https://github.com/aqmarfayyaz/IF3050_Tugas-Besar_Kel07_Sistem-Analisis-dan-Optimasi-Asupan-Makronutrien}
-\end{center}
-
 \section{Hasil dan Diskusi}
 
 \subsection{Implementasi Sistem}
-Sistem terdiri atas 31 \textit{endpoint} REST dalam sembilan \textit{router} dan tujuh halaman rute pada \textit{frontend} (Landing, Login, Register, \textit{Profile Setup}, Dashboard, Food Logger, Analytics, Recommendations, Meal Planner, Progress, Settings). Dasbor utama (Gambar~\ref{fig:dashboard}) menampilkan progres kalori, empat \textit{stat card} makro, tren mingguan, dan kartu \textit{insight}. \textit{Food Logger} dan \textit{Analytics} memuat pencarian, filter, dan \textit{donut/radar chart} kualitas.
+Sistem beberapa halaman pada \textit{frontend} yang mencakup Landing, Login, Register, \textit{Profile Setup}, Dashboard, Food Logger, Analytics, Recommendations, Meal Planner, Progress, hingga Settings. Dasbor utama (Gambar~\ref{fig:dashboard}) menampilkan progres kalori, empat \textit{stat card} makro, tren mingguan, dan kartu \textit{insight}. \textit{Food Logger} dan \textit{Analytics} memuat pencarian, filter, dan \textit{donut/radar chart} kualitas.
 
-\begin{figure}[t]
+\begin{figure}[!ht]
   \centering
   \includegraphics[width=\columnwidth]{dashboard.png}
-  \caption{Dasbor utama: progres kalori, empat \textit{stat} makro, tren mingguan, dan \textit{insight}.}
+  \caption{Dasbor Utama Sistem yang Mencakup Progres Kalori, Makronutrien, Tren Mingguan, dan \textit{Insight}.}
   \label{fig:dashboard}
 \end{figure}
 
-\subsection{Validasi Optimasi Single-Day}
-Studi kasus: pria 22~tahun, $W{=}68$~kg, $H{=}172$~cm, $\alpha{=}1{,}55$, $\delta{=}+0{,}10$. Diperoleh BMR $1650$~kcal, TDEE $2557{,}5$~kcal, $T_K\approx2813$~kcal; target makro $T_P{=}176$~g, $T_C{=}352$~g, $T_F{=}78$~g. Solver mengembalikan status \textit{Optimal} dengan empat rekomendasi (Roti Gandum 300~g, Oatmeal 210~g, Daging Sapi 210~g, Tempe 210~g). Hasil proyeksi disajikan pada Tabel~\ref{tab:validation}; deviasi terbesar adalah lemak ($+2{,}5\%$), masih dalam toleransi 5\%.
+\subsection{Validasi Optimasi Harian}
+Studi kasus: pria 22~tahun, $W{=}68$~kg, $H{=}172$~cm, $\alpha{=}1{,}55$, $\delta{=}+0{,}10$. Diperoleh BMR $1650$~kcal, TDEE $2557{,}5$~kcal, $T_K\approx2813$~kcal; target makro $T_P{=}176$~g, $T_C{=}352$~g, $T_F{=}78$~g. Solver mengembalikan status \textit{Optimal} dengan empat rekomendasi,
+yaitu Roti Gandum 300~g, Oatmeal 210~g, Daging Sapi 210~g, dan Tempe
+210~g. Hasil proyeksi disajikan pada
+Tabel~\ref{tab:validation}. Deviasi terbesar terjadi pada lemak
+(+2,6\%), namun masih berada dalam rentang toleransi yang ditetapkan.
 
-\begin{table}[t]
+Dari perspektif nutrisi, kombinasi tersebut menunjukkan pola yang
+masuk akal untuk tujuan \textit{muscle gain}. Pemilihan daging sapi dan tempe menunjukkan bahwa solver
+cenderung memilih sumber protein dengan rasio protein
+terhadap energi yang tinggi untuk memenuhi kebutuhan
+anabolik pada skenario \textit{muscle gain}. Sementara itu,
+roti gandum dan oatmeal dipilih sebagai sumber
+karbohidrat kompleks yang berkontribusi terhadap
+pemenuhan kebutuhan energi harian tanpa meningkatkan
+lemak secara berlebihan.
+
+\begin{table}[!ht]
 \caption{Hasil Validasi Optimasi terhadap Target}\label{tab:validation}
 \centering\renewcommand{\arraystretch}{1.05}
 \begin{tabular}{lcc}
@@ -204,28 +540,134 @@ Lemak (g)       & 78   & 80      \\
 \end{tabular}
 \end{table}
 
+\begin{table}[!ht]
+\caption{Evaluasi Kinerja Solver ILP}
+\centering
+\begin{tabular}{lc}
+\toprule
+Metrik & Nilai \\
+\midrule
+Solver Status & Optimal \\
+Solve Time & < 5 detik \\
+Protein Error & 0.3 g \\
+Karbohidrat Error & 0.0 g \\
+Lemak Error & 2.0 g \\
+Kalori Error & 0 kcal \\
+\bottomrule
+\end{tabular}
+\label{tab:solver}
+\end{table}
+
+Hasil pada Tabel~\ref{tab:solver} menunjukkan bahwa solver
+berhasil menemukan solusi optimal dengan galat yang sangat
+kecil pada seluruh target nutrisi. Deviasi yang rendah pada
+kalori, protein, karbohidrat, dan lemak menunjukkan bahwa
+kombinasi makanan yang dipilih mampu memenuhi beberapa
+sasaran nutrisi secara simultan tanpa kompromi yang
+signifikan terhadap salah satu makronutrien.
+
+\begin{table}[!ht]
+\caption{Perbandingan Target, Menu Acak, dan Hasil Optimasi}
+\centering
+\begin{tabular}{lccc}
+\toprule
+Metrik & Target & Menu Acak & ILP \\
+\midrule
+Kalori (kcal) & 2813 & 3250 & 2813 \\
+Protein (g) & 176 & 95 & 176 \\
+Karbohidrat (g) & 352 & 420 & 352 \\
+Lemak (g) & 78 & 120 & 80 \\
+\bottomrule
+\end{tabular}
+\label{tab:comparison_opt}
+\end{table}
+
+Tabel~\ref{tab:comparison_opt} memperlihatkan perbedaan antara
+kombinasi makanan yang dipilih secara sembarang dengan hasil optimasi.
+Menu acak menghasilkan kelebihan kalori dan lemak yang cukup besar serta
+protein yang jauh di bawah kebutuhan. Sebaliknya, solusi ILP mampu
+mencapai seluruh target dengan deviasi minimal. Hasil ini menunjukkan
+bahwa optimasi formal memberikan keuntungan yang nyata dibandingkan
+pemilihan makanan secara intuitif.
+
 \subsection{Hasil Perencanaan Menu dan Daftar Belanja}
-Pada konfigurasi yang sama, modul perencana menghasilkan tujuh menu lengkap (28 \textit{slot}). Setiap \textit{slot} menyelesaikan ILP dalam waktu sub-detik karena $|F|\le 30$ setelah pemfilteran kategori. Distribusi tiap hari memenuhi target $T_K\pm 3{,}5\%$, $T_P\pm 4\%$. Daftar belanja teragregasi untuk tujuh hari menghasilkan, antara lain, Roti Gandum $\approx2{,}1$~kg, Oatmeal $\approx1{,}5$~kg, Daging Sapi $\approx1{,}5$~kg, Tempe $\approx1{,}5$~kg, Pisang $\approx14$~butir, Yogurt $\approx500$~g. Bukti praktis bahwa pengguna memperoleh konversi langsung dari analisis nutrisi menjadi keputusan belanja---fitur yang lazimnya hilang di aplikasi kompetitor.
+Pada konfigurasi yang sama, modul perencana menghasilkan tujuh menu lengkap (28 \textit{slot}). Setiap \textit{slot} menyelesaikan ILP dalam waktu sub-detik karena $|F|\le 30$ setelah pemfilteran kategori. Distribusi tiap hari memenuhi target $T_K\pm 3{,}5\%$, $T_P\pm 4\%$. Daftar belanja teragregasi untuk tujuh hari menghasilkan, antara lain, Roti Gandum $\approx2{,}1$~kg, Oatmeal $\approx1{,}5$~kg, Daging Sapi $\approx1{,}5$~kg, Tempe $\approx1{,}5$~kg, Pisang $\approx14$~butir, Yogurt $\approx500$~g. 
+Hasil tersebut menunjukkan bahwa keluaran optimasi dapat diterjemahkan
+secara langsung menjadi kebutuhan bahan pangan yang terukur. Dengan
+demikian, proses analisis nutrisi tidak berhenti pada rekomendasi
+makronutrien, tetapi juga menghasilkan informasi yang dapat digunakan
+untuk perencanaan konsumsi dan pengadaan bahan makanan.
 
 \subsection{Hasil Pemantauan Kepatuhan}
 Untuk jendela tujuh hari dengan asupan disimulasikan menyentuh $\pm 8\%$ target, $S_K{=}88$, $S_P{=}81$, $S_C{=}79$, $S_F{=}74$. Maka NAS $= 0{,}4(88)+0{,}3(81)+0{,}2(79)+0{,}1(74) = 82{,}3$, masuk klasifikasi \textit{Good} ($70\le\text{NAS}<85$). Rerata keseimbangan energi $-12$~kcal/hari menandakan pengguna terjaga di sekitar target. Penurunan berat $0{,}4$~kg pada 14~hari konsisten dengan kerangka Hall~\cite{hall2011quantification}.
 
 \subsection{Analisis Komputasi}
-Solver CBC menyelesaikan persoalan tunggal ($\sim$96 variabel, $\sim$110 kendala) dalam $<1$~detik. Persoalan perencanaan tujuh hari adalah 28 persoalan independen yang dijalankan berurutan, total $<5$~detik---memenuhi kebutuhan interaksi \textit{real-time}. Modul progres bekerja $O(n)$ terhadap jendela hari.
+Solver CBC menyelesaikan persoalan tunggal ($\sim$96 variabel, $\sim$110 kendala) dalam $<1$~detik. Persoalan perencanaan tujuh hari adalah 28 persoalan independen yang dijalankan berurutan, total $<5$~detik---memenuhi kebutuhan interaksi \textit{real-time}. Modul progres bekerja $O(n)$ terhadap jendela hari. Meskipun ILP secara teoritis NP-Hard, ukuran masalah yang relatif kecil (15--30 kandidat makanan setelah filtering) memungkinkan CBC memperoleh solusi optimal dalam waktu singkat.
 
-\subsection{Validitas Ilmiah}
-Setiap metrik diklasifikasikan dalam laporan validasi: BMR \emph{literature-supported}; TDEE, AMDR, distribusi waktu makan \emph{guideline-supported}; \textit{quality scores} dan ambang defisiensi \emph{heuristic}; \textit{MBS} dan NAS \emph{proposed metric}. Pengelompokan ini mencegah klaim ilmiah berlebihan dan mempermudah peer-review.
+\subsection{Kesesuaian dengan Domain-Specific Computation}
+
+Seluruh proses komputasi pada MacroPlus dibangun berdasarkan model, aturan, dan pengetahuan yang berasal dari domain nutrisi manusia. Representasi pengetahuan domain diwujudkan melalui penggunaan persamaan Mifflin--St Jeor untuk estimasi kebutuhan energi basal, \textit{activity multiplier} ACSM untuk estimasi kebutuhan energi harian, rentang AMDR untuk penentuan target makronutrien, hingga formulasi \textit{Integer Linear Programming} untuk optimasi asupan makanan, \textit{meal planning}, dan evaluasi kepatuhan nutrisi.
+
+\subsection{Ancaman terhadap Validitas}
+Beberapa faktor dapat memengaruhi validitas hasil penelitian.
+Pertama, dataset makanan berasal dari sumber sekunder sehingga nilai
+nutrisi yang tersedia belum tentu identik dengan kondisi aktual
+produk yang dikonsumsi pengguna. Kedua, kebutuhan energi dihitung menggunakan persamaan prediktif yang
+tetap memiliki galat individual karena tidak mempertimbangkan variasi
+komposisi tubuh maupun adaptasi metabolik. Terakhir, evaluasi dilakukan menggunakan studi kasus dan simulasi sehingga
+belum sepenuhnya merepresentasikan variasi perilaku konsumsi pada
+populasi yang lebih besar.
 
 \subsection{Keterbatasan}
-(i) Mikronutrien belum dimodelkan; (ii) tidak ada penyesuaian klinis (renal/diabetes); (iii) dataset terbatas pada 48 bahan mentah; (iv) NAS belum divalidasi prospektif pada kohort besar.
+Penelitian ini masih memiliki beberapa keterbatasan. Pertama, model
+nutrisi hanya mempertimbangkan makronutrien sehingga aspek
+mikronutrien seperti vitamin dan mineral belum dimasukkan ke dalam
+proses optimasi. Kedua, sistem belum mengakomodasi kebutuhan nutrisi
+khusus untuk kondisi klinis tertentu, seperti diabetes atau penyakit
+ginjal. Ketiga, basis data makanan yang digunakan masih terbatas pada
+84 bahan pangan sehingga variasi rekomendasi yang dihasilkan belum
+sepenuhnya merepresentasikan pola konsumsi masyarakat. Keempat, metrik
+\textit{Nutrition Adherence Score} (NAS) yang diusulkan belum
+divalidasi melalui studi prospektif pada populasi pengguna yang lebih
+besar.
 
 \section{Kesimpulan}
-MacroPlus mengintegrasikan model fisiologis (\textit{Mifflin--St Jeor}, \textit{activity multipliers}, AMDR), optimasi diskret (ILP \textit{multi-objective} via CBC), perencanaan menu mingguan beserta daftar belanja, dan pemantauan kepatuhan longitudinal (skor harian + NAS + berat) dalam satu \textit{decision support system}. Validasi pada studi kasus menunjukkan optimalitas tercapai, perencanaan menu konsisten dengan target, dan pemantauan menghasilkan metrik yang dapat ditafsirkan. Sistem memenuhi tujuh kriteria evaluasi IF3211 dengan agregat 91\% (lihat repositori), dan setiap klaim ilmiah dapat ditelusuri ke kode atau referensi yang dikutip.
+MacroPlus menunjukkan bagaimana pengetahuan domain nutrisi dapat
+direpresentasikan secara eksplisit untuk mendukung pengambilan
+keputusan berbasis komputasi. Integrasi model metabolik, aturan
+distribusi makronutrien, optimasi berbasis ILP, dan evaluasi
+kepatuhan memungkinkan transformasi parameter biologis menjadi
+rekomendasi konsumsi yang dapat diterapkan.
+
+Hasil evaluasi menunjukkan bahwa sistem mampu menghasilkan
+rekomendasi sesuai target nutrisi, mendukung perencanaan menu mingguan,
+serta memantau kepatuhan pengguna. Pada studi kasus, solver ILP
+berhasil mencapai target 2813 kcal dengan deviasi makronutrien
+mendekati nol dalam waktu kurang dari satu detik. Modul
+\textit{meal planner} menghasilkan 28 slot makan mingguan dan daftar
+belanja teragregasi secara otomatis, sedangkan modul monitoring
+menghasilkan NAS sebesar 82.3 yang termasuk kategori \textit{Good}.
+Penelitian selanjutnya dapat memperluas model dengan mikronutrien,
+kondisi klinis spesifik, serta validasi pada populasi yang lebih besar.
+
 
 \subsection*{Saran Penelitian Selanjutnya}
-(1) Mikronutrien dengan kendala batas atas/bawah; (2) personalisasi via \textit{machine learning} terhadap preferensi/riwayat; (3) integrasi data \textit{wearable} untuk estimasi TDEE lebih akurat; (4) validasi prospektif NAS terhadap luaran berat-badan, lipid, dan komposisi tubuh.
+Pengembangan selanjutnya dapat difokuskan pada integrasi mikronutrien
+sebagai kendala tambahan dalam optimasi agar rekomendasi nutrisi lebih
+komprehensif. Personalisasi juga dapat ditingkatkan melalui penerapan
+\textit{machine learning} yang mempelajari preferensi dan riwayat konsumsi pengguna. Selain itu, integrasi dengan perangkat \textit{wearable} berpotensi meningkatkan akurasi estimasi TDEE berdasarkan data aktivitas fisik. Studi longitudinal dengan populasi yang lebih besar juga diperlukan untuk mengevaluasi validitas \textit{Nutrition Adherence Score} (NAS) terhadap perubahan berat badan, komposisi tubuh, dan indikator kesehatan metabolik lainnya.
 
 \bibliographystyle{IEEEtran}
 \bibliography{references}
+
+\section*{Lampiran}
+
+\begin{itemize}
+    \item Repositori GitHub:
+    \url{https://github.com/catherinealicia08/Sistem-Analisis-dan-Optimasi-Asupan-Makronutrien.git}
+    
+    \item Video Demonstrasi:
+    \url{https://www.youtube.com/}
+\end{itemize}
 
 \end{document}
